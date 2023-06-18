@@ -1,0 +1,197 @@
+// Rezervasyonları saklamak için dizi
+let reservations = [];
+
+// Personel kayıtlarını saklamak için dizi
+let staffList = [];
+
+// Müşteri Girişi linkine tıklama işlemi
+document.getElementById("customer-link").addEventListener("click", function (event) {
+    event.preventDefault();
+    document.getElementById("home").style.display = "none";
+    document.getElementById("customer-login").style.display = "block";
+});
+
+// Personel Girişi linkine tıklama işlemi
+document.getElementById("staff-link").addEventListener("click", function (event) {
+    event.preventDefault();
+    document.getElementById("home").style.display = "none";
+    document.getElementById("staff-login").style.display = "block";
+});
+
+// Rezervasyon yapma işlemi
+function makeReservation() {
+    const name = document.getElementById("name").value;
+    const date = document.getElementById("date").value;
+    const time = document.getElementById("time").value;
+    const tableNumber = document.getElementById("table-number").value;
+    const numberOfGuests = prompt("Kaç kişi?", "");
+
+    // Giriş doğrulama
+    if (name === "" || tableNumber === "" || numberOfGuests === "") {
+        alert("Hatalı Giriş: Lütfen tüm alanları doldurun.");
+        return;
+    }
+
+    if (!isValidDate(date)) {
+        alert("Hatalı Giriş: Lütfen geçerli bir tarih seçiniz.");
+        return;
+    }
+
+    if (!isValidTime(time)) {
+        alert("Hatalı Giriş: Lütfen geçerli bir saat seçiniz.");
+        return;
+    }
+
+    // Rezervasyon objesini oluşturma
+    const reservation = {
+        name: name,
+        date: date,
+        time: time,
+        tableNumber: tableNumber,
+        numberOfGuests: numberOfGuests
+    };
+
+    // Rezervasyonu diziye ekleme
+    reservations.push(reservation);
+
+    // Başarılı rezervasyon mesajı
+    alert("Rezervasyon başarıyla oluşturuldu.");
+
+    // Rezervasyon formunu temizleme
+    document.getElementById("name").value = "";
+    document.getElementById("date").value = "";
+    document.getElementById("time").value = "";
+    document.getElementById("table-number").value = "";
+}
+
+// Geçerli bir tarih olup olmadığını kontrol etme
+function isValidDate(date) {
+    const currentDate = new Date();
+    const inputDate = new Date(date);
+    return !isNaN(inputDate) && inputDate >= currentDate;
+}
+
+// Geçerli bir saat olup olmadığını kontrol etme
+function isValidTime(time) {
+    const currentTime = new Date();
+    const inputTime = new Date(`1970-01-01T${time}`);
+    return !isNaN(inputTime) && inputTime >= currentTime;
+}
+
+// Masa numaralarını oluşturma ve seçenekleri ekleme
+function createTableOptions() {
+    const tableNumberSelect = document.getElementById("table-number");
+
+    for (let i = 1; i <= 100; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `Masa ${i}`;
+        tableNumberSelect.appendChild(option);
+    }
+}
+
+// Sayfa yüklendiğinde masa numaralarını oluşturma fonksiyonunu çağırma
+window.addEventListener("DOMContentLoaded", createTableOptions);
+
+// Personel kayıt işlemi
+function registerStaff() {
+    const staffName = document.getElementById("staff-name").value;
+    const staffPosition = document.getElementById("staff-position").value;
+    const staffUsername = document.getElementById("staff-username").value;
+    const staffPassword = document.getElementById("staff-password").value;
+
+    // Giriş doğrulama
+    if (staffName === "" || staffPosition === "" || staffUsername === "" || staffPassword === "") {
+        alert("Hatalı Giriş: Lütfen tüm alanları doldurun.");
+        return;
+    }
+
+    // Personel objesini oluşturma
+    const staff = {
+        name: staffName,
+        position: staffPosition,
+        username: staffUsername,
+        password: staffPassword,
+        reservations: []
+    };
+
+    // Personel kaydını diziye ekleme
+    staffList.push(staff);
+
+    // Başarılı kayıt mesajı
+    alert("Personel kaydı başarıyla oluşturuldu.");
+
+    // Personel kayıt formunu temizleme
+    document.getElementById("staff-name").value = "";
+    document.getElementById("staff-position").value = "";
+    document.getElementById("staff-username").value = "";
+    document.getElementById("staff-password").value = "";
+}
+
+// Personel giriş işlemi
+function loginStaff() {
+    const username = document.getElementById("login-username").value;
+    const password = document.getElementById("login-password").value;
+
+    // Personel giriş doğrulama
+    const staff = staffList.find(staff => staff.username === username && staff.password === password);
+    if (staff) {
+        // Personel ekranını göster
+        showStaffScreen(staff);
+    } else {
+        alert("Hatalı Giriş: Kullanıcı adı veya şifre yanlış.");
+    }
+
+    // Personel giriş formunu temizleme
+    document.getElementById("login-username").value = "";
+    document.getElementById("login-password").value = "";
+}
+
+// Personel ekranını gösterme
+function showStaffScreen(staff) {
+    // Ana ekranı gizle
+    document.getElementById("home").style.display = "none";
+
+    // Personel giriş ekranını göster
+    document.getElementById("staff-login").style.display = "none";
+    document.getElementById("staff-screen").style.display = "block";
+
+    // Personel bilgilerini güncelleme
+    document.getElementById("staff-name-info").textContent = `Adı: ${staff.name}`;
+    document.getElementById("staff-position-info").textContent = `Görevi: ${staff.position}`;
+
+    // Rezervasyon bilgilerini gösterme
+    const staffReservationInfo = document.getElementById("staff-reservation-info");
+
+    if (staff.reservations.length > 0) {
+        staffReservationInfo.innerHTML = "Rezervasyonlar:";
+        staffReservationInfo.innerHTML += "<ul>";
+
+        for (const reservation of staff.reservations) {
+            const reservationItem = document.createElement("li");
+            reservationItem.textContent = `${reservation.date} ${reservation.time} - Masa ${reservation.tableNumber} (${reservation.numberOfGuests} Kişi) - ${reservation.name}`;
+            staffReservationInfo.appendChild(reservationItem);
+        }
+
+        staffReservationInfo.innerHTML += "</ul>";
+    } else {
+        staffReservationInfo.textContent = "Rezervasyon yok.";
+    }
+
+    // Stok durumu bilgisini gösterme
+    const staffStockInfo = document.getElementById("staff-stock-info");
+    staffStockInfo.textContent = "Stok Durumu: Henüz implemente edilmedi.";
+}
+
+// Rezervasyon yapma butonuna tıklama işlemi
+document.getElementById("reservation-submit").addEventListener("click", makeReservation);
+
+// Personel kayıt butonuna tıklama işlemi
+document.getElementById("staff-register").addEventListener("click", registerStaff);
+
+// Personel giriş butonuna tıklama işlemi
+document.getElementById("staff-login-button").addEventListener("click", loginStaff);
+// Ana sayfaya git fonksiyonu
+function goToHomePage() {
+    window.location.href = "anasayfa.html";
+}
