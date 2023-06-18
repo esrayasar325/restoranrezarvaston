@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restoran Rezervasyon Otomasyonu</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1>Restoran Rezervasyonu</h1>
+
+    <!-- Ana Sayfa -->
+    <section id="home">
+        <h2>Ana Sayfa</h2>
+        <a id="customer-link" href="#">Müşteri Girişi</a>
+        <br>
+        <a id="staff-link" href="#">Personel Girişi</a>
+    </section>
+
+    <!-- Müşteri Girişi -->
+    <section id="customer-login" style="display: none;">
+        <h2>Müşteri Girişi</h2>
+        <div id="reservation-form">
+            <label for="name">Adınız:</label>
+            <input type="text" id="name" required>
+
+            <label for="date">Tarih:</label>
+            <input type="date" id="date" required>
+
+            <label for="time">Saat:</label>
+            <input type="time" id="time" required>
+
+            <label for="table-number">Masa Numarası:</label>
+            <select id="table-number">
+                <option value="">Seçiniz</option>
+                <!-- Masa numaralarını burada oluşturun -->
+            </select>
+
+            <label for="number-of-guests">Kişi Sayısı:</label>
+            <input type="number" id="number-of-guests" required>
+
+            <button onclick="makeReservation()">Rezervasyon Yap</button>
+        </div>
+
+        <div id="reservation-list">
+            <h2>Aktif Rezervasyonlar</h2>
+            <ul id="active-reservations"></ul>
+        </div>
+
+        <div id="past-reservation-list">
+            <h2>Geçmiş Rezervasyonlar</h2>
+            <ul id="past-reservations"></ul>
+        </div>
+    </section>
+
+    <!-- Personel Girişi -->
+    <section id="staff-login" style="display: none;">
+        <h2>Personel Girişi</h2>
+        <div id="staff-registration">
+            <h3>Kayıt Ol</h3>
+            <label for="staff-name">Adınız:</label>
+            <input type="text" id="staff-name" required>
+
+            <label for="staff-position">Görev Aldığınız Bölüm:</label>
+            <input type="text" id="staff-position" required>
+
+            <label for="staff-username">Kullanıcı Adı:</label>
+            <input type="text" id="staff-username" required>
+
+            <label for="staff-password">Şifre:</label>
+            <input type="password" id="staff-password" required>
+
+            <button onclick="registerStaff()">Kayıt Ol</button>
+        </div>
+
+        <div id="staff-login-form">
+            <h3>Giriş Yap</h3>
+            <label for="login-username">Kullanıcı Adı:</label>
+            <input type="text" id="login-username" required>
+
+            <label for="login-password">Şifre:</label>
+            <input type="password" id="login-password" required>
+
+            <button onclick="loginStaff()">Giriş Yap</button>
+        </div>
+
+        <div id="staff-info" style="display: none;">
+            <h3>Personel Bilgileri</h3>
+            <p id="staff-name-info"></p>
+            <p id="staff-position-info"></p>
+            <p id="staff-reservation-info"></p>
+            <p id="staff-stock-info"></p>
+        </div>
+    </section>
+
+    <script>
+        // Rezervasyonları saklamak için dizi
+        let reservations = [];
+
+        // Kayıtlı personellerin listesi
+        let staffList = [];
+
+        // Rezervasyon yapma işlemi
+        function makeReservation() {
+            const name = document.getElementById("name").value;
+            const date = document.getElementById("date").value;
+            const time = document.getElementById("time").value;
+            const tableNumber = document.getElementById("table-number").value;
+            const numberOfGuests = document.getElementById("number-of-guests").value;
+
+            // Giriş doğrulama
+            if (name === "" || !isValidDate(date) || !isValidTime(time) || tableNumber === "" || numberOfGuests === "") {
+                alert("Hatalı Giriş: Lütfen tüm alanları doldurun ve geçerli değerler girin.");
+                return;
+            }
+
+            // Masa dolu kontrolü
+            if (isTableOccupied(tableNumber)) {
+                alert("Seçtiğiniz masa dolu. Lütfen başka bir masa seçin.");
+                return;
+            }
+
+            // Rezervasyon objesini oluşturma
+            const reservation = {
+                name: name,
+                date: date,
+                time: time,
+                tableNumber: tableNumber,
+                numberOfGuests: numberOfGuests
+            };
+
+            // Rezervasyonu listeye ekleme
+            reservations.push(reservation);
+
+            // Rezervasyon listesini güncelleme
+            updateReservationList();
+
+            // Başarılı rezervasyon mesajı
+            alert("Rezervasyon başarıyla oluşturuldu.");
+
+            // Rezervasyon formunu temizleme
+            document.getElementById("name").value = "";
+            document.getElementById("date").value = "";
+            document.getElementById("time").value = "";
+            document.getElementById("table-number").value = "";
+            document.getElementById("number-of-guests").value = "";
+        }
+
+        // Giriş tarihini kontrol etme
+        function isValidDate(date) {
+            const currentDate = new Date();
+            const selectedDate = new Date(date);
+            return selectedDate >= currentDate;
+        }
+
+        // Giriş saati kontrol etme
+        function isValidTime(time) {
+            const currentTime = new Date();
+            const selectedTime = new Date(`2000-01-01T${time}`);
+            return selectedTime >= currentTime;
+        }
+// Masa numaralarını oluşturma ve seçenekleri ekleme
+function createTableOptions() {
+    const tableNumberSelect = document.getElementById("table-number");
+
+    for (let i = 1; i <= 100; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = `Masa ${i}`;
+        tableNumberSelect.appendChild(option);
+    }
+}
+
+//  masa numaralarını oluşturma fonksiyonunu çağırma
+window.addEventListener("DOMContentLoaded", createTableOptions);
+
+        // Masa doluluk kontrolü
+        function isTableOccupied(tableNumber) {
+            return reservations.some(reservation => reservation.tableNumber === tableNumber);
+        }
+
+        // Rezervasyon listesini güncelleme
+        function updateReservationList() {
+            const activeReservationsElement = document.getElementById("active-reservations");
+            const pastReservationsElement = document.getElementById("past-reservations");
+
+            activeReservationsElement.innerHTML = "";
+            pastReservationsElement.innerHTML = "";
+
+            for (const reservation of reservations) {
+                const reservationItem = document.createElement("li");
+                const reservationText = `${reservation.date} ${reservation.time} - Masa ${reservation.tableNumber} (${reservation.numberOfGuests} Kişi) - ${reservation.name}`;
+
+                if (isPastReservation(reservation)) {
+                    reservationItem.classList.add("past");
+                    reservationItem.textContent = reservationText;
+                    pastReservationsElement.appendChild(reservationItem);
+                } else {
+                    reservationItem.classList.add("active");
+                    reservationItem.textContent = reservationText;
+                    activeReservationsElement.appendChild(reservationItem);
+                }
+            }
+        }
+
+        // Geçmiş rezervasyon kontrolü
+        function isPastReservation(reservation) {
+            const currentDate = new Date();
+            const reservationDate = new Date(`${reservation.date}T${reservation.time}`);
+            return reservationDate < currentDate;
+        }
+
+        // Personel kayıt işlemi
+        function registerStaff() {
+            const staffName = document.getElementById("staff-name").value;
+            const staffPosition = document.getElementById("staff-position").value;
+            const staffUsername = document.getElementById("staff-username").value;
+            const staffPassword = document.getElementById("staff-password").value;
+
+            // Giriş doğrulama
+            if (staffName === "" || staffPosition === "" || staffUsername === "" || staffPassword === "") {
+                alert("Hatalı Giriş: Lütfen tüm alanları doldurun.");
+                return;
+            }
+
+            // Personel objesini oluşturma
+            const staff = {
+                name: staffName,
+                position: staffPosition,
+                username: staffUsername,
+                password: staffPassword,
+                reservations: []
+            };
+
+            // Personeli listeye ekleme
+            staffList.push(staff);
+
+            // Başarılı kayıt mesajı
+            alert("Personel kaydı başarıyla oluşturuldu.");
+
+            // Kayıt formunu temizleme
+            document.getElementById("staff-name").value = "";
+            document.getElementById("staff-position").value = "";
+            document.getElementById("staff-username").value = "";
+            document.getElementById("staff-password").value = "";
+        }
+
+        // Personel giriş işlemi
+        function loginStaff() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+
+            // Personel doğrulama
+            const staff = staffList.find(staff => staff.username === username && staff.password === password);
+
+            if (staff) {
+                // Giriş başarılı
+                showStaffInfo(staff);
+                alert("Personel girişi başarılı.");
+            } else {
+                // Giriş başarısız
+                alert("Hatalı giriş. Lütfen kullanıcı adı ve şifrenizi kontrol edin.");
+            }
+<button id="customer-login-button">Müşteri Girişi</button>
+
+            // Giriş formunu temizleme
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+        }
+
+        // Personel bilgilerini gösterme
+        function showStaffInfo(staff) {
+            const staffNameInfo = document.getElementById("staff-name-info");
+            const staffPositionInfo = document.getElementById("staff-position-info");
+            const staffReservationInfo = document.getElementById("staff-reservation-info");
+            const staffStockInfo = document.getElementById("staff-stock-info");
+
+            staffNameInfo.textContent = `Adı: ${staff.name}`;
+            staffPositionInfo.textContent = `Görevi: ${staff.position}`;
+
+            if (staff.reservations.length > 0) {
+                staffReservationInfo.textContent = "Rezervasyonlar:";
+                staffReservationInfo.innerHTML += "<ul>";
+
+                for (const reservation of staff.reservations) {
+                    const reservationItem = document.createElement("li");
+                    reservationItem.textContent = `${reservation.date} ${reservation.time} - Masa ${reservation.tableNumber} (${reservation.numberOfGuests} Kişi) - ${reservation.name}`;
+                    staffReservationInfo.appendChild(reservationItem);
+                }
+
+                staffReservationInfo.innerHTML += "</ul>";
+            } else {
+                staffReservationInfo.textContent = "Rezervasyon yok.";
+            }
+
+            // Stok durumu bilgisini burada göster
+            staffStockInfo.textContent = "Stok Durumu: Henüz implemente edilmedi.";
+        }
+
+        // Müşteri Girişi linkine tıklama işlemi
+        document.getElementById("customer-link").addEventListener("click", function (event) {
+            event.preventDefault();
+            document.getElementById("home").style.display = "none";
+            document.getElementById("customer-login").style.display = "block";
+        });
+
+        // Personel Girişi linkine tıklama işlemi
+        document.getElementById("staff-link").addEventListener("click", function (event) {
+            event.preventDefault();
+            document.getElementById("home").style.display = "none";
+            document.getElementById("staff-login").style.display = "block";
+        });
+    </script>
+</body>
+</html>
