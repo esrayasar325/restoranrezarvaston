@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restoran Rezervasyon Otomasyonu</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1>Restoran Rezervasyonu</h1>
+
+    <div id="reservation-form">
+        <label for="name">Adınız:</label>
+        <input type="text" id="name" required>
+
+        <label for="date">Tarih:</label>
+        <input type="date" id="date" required>
+
+        <label for="time">Saat:</label>
+        <input type="time" id="time" required>
+
+        <button onclick="makeReservation()">Rezervasyon Yap</button>
+    </div>
+
+    <div id="reservation-list">
+        <h2>Rezervasyonlar</h2>
+        <ul id="reservations"></ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
