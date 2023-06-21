@@ -1,0 +1,70 @@
+// Müşteri listesi
+const customers = [];
+
+// Rezervasyon listesi
+const reservations = [];
+
+// Müşteri kaydı
+document.getElementById("customer-form").addEventListener("submit", function(event) {
+  event.preventDefault();
+  
+  const name = document.getElementById("name").value;
+  const date = document.getElementById("date").value;
+  const time = document.getElementById("time").value;
+
+  if (name === "" || date === "" || time === "") {
+    alert("Hatalı Giriş: Lütfen tüm alanları doldurun.");
+    return;
+  }
+
+  if (!isValidDate(date)) {
+    alert("Hatalı Giriş: Geçerli bir tarih seçiniz.");
+    return;
+  }
+
+  if (!isValidTime(time)) {
+    alert("Hatalı Giriş: Geçerli bir saat seçiniz.");
+    return;
+  }
+
+  const reservation = {
+    name: name,
+    date: date,
+    time: time
+  };
+
+  reservations.push(reservation);
+
+  alert("Rezervasyon başarıyla oluşturuldu.");
+
+  document.getElementById("name").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("time").value = "";
+
+  listReservations();
+});
+
+// Tarih kontrolü
+function isValidDate(date) {
+  const currentDate = new Date();
+  const inputDate = new Date(date);
+  return !isNaN(inputDate) && inputDate >= currentDate;
+}
+
+// Saat kontrolü
+function isValidTime(time) {
+  const timeFormatRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
+  return timeFormatRegex.test(time);
+}
+
+// Rezervasyonları listeleme
+function listReservations() {
+  const reservationsList = document.getElementById("reservations");
+  reservationsList.innerHTML = "";
+
+  for (const reservation of reservations) {
+    const listItem = document.createElement("li");
+    listItem.textContent = `${reservation.name} - ${reservation.date} - ${reservation.time}`;
+    reservationsList.appendChild(listItem);
+  }
+}
